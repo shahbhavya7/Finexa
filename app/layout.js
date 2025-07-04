@@ -24,13 +24,19 @@ export default function RootLayout({ children }) {
           <Toaster richColors />
 
           <footer className="bg-blue-50 py-12">
-            <div className="container mx-auto px-4 text-center text-gray-600">
+            <div className="container mx-auto px-4 text-center text-gray-600 py-8">
               <p>
-      © 2025 <span>Finexa</span>
-    </p>
-    <p>
-      Crafted with care by <span >Bhavya</span>.
-    </p>
+                © 2025{" "}
+                <span className="bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 bg-clip-text text-transparent font-semibold">
+                  Finexa
+                </span>
+              </p>
+              <p>
+                Crafted with care by{" "}
+                <span className="bg-gradient-to-r from-gray-700 via-cyan-600 to-gray-700 bg-clip-text text-transparent font-medium">
+                  Bhavya
+                </span>
+              </p>
             </div>
           </footer>
         </body>
