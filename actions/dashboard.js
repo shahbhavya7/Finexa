@@ -18,36 +18,37 @@ const serializeTransaction = (obj) => { // as nextjs does not support BigInt, we
   }
   return serialized; // return the serialized object
 };
-
-export async function getUserAccounts() {
+ 
+export async function getUserAccounts() { // this server action is used to get the user accounts, it is called from the client side
+  // Get the user ID from Clerk authentication
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized"); // Ensure the user is authenticated, if not show an error
 
-  const user = await db.user.findUnique({
+  const user = await db.user.findUnique({ // Find the user in the database using the Clerk user ID
     where: { clerkUserId: userId },
   });
 
-  if (!user) {
+  if (!user) {  // If the user is not found, throw an error
     throw new Error("User not found");
   }
 
-  try {
+  try { // Fetch user accounts from the database using Prisma client
     const accounts = await db.account.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      include: {
-        _count: {
-          select: {
-            transactions: true,
+      where: { userId: user.id }, // Find accounts that belong to the user
+      orderBy: { createdAt: "desc" }, // Order accounts by creation date in descending order
+      include: { // Include related transactions count for each account
+        _count: { // Count the number of transactions for each account
+          select: { // Select the transactions count 
+            transactions: true, // This will return the number of transactions associated with each account
           },
         },
       },
     });
 
     // Serialize accounts before sending to client
-    const serializedAccounts = accounts.map(serializeTransaction);
+    const serializedAccounts = accounts.map(serializeTransaction); // Map through each account and serialize it using the serializeTransaction function
 
-    return serializedAccounts;
+    return serializedAccounts; // Return the serialized accounts to the client
   } catch (error) {
     console.error(error.message);
   }
