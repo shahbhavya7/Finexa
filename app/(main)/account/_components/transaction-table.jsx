@@ -86,8 +86,12 @@ export function TransactionTable({ transactions }) {
     if (searchTerm) {
       // If a search term is typed (like "food"), keep only those transactions whose description includes that term (case-insensitive).
       const searchLower = searchTerm.toLowerCase();
-      result = result.filter((transaction) =>
-        transaction.description?.toLowerCase().includes(searchLower)
+      result = result.filter(
+        (
+          transaction // As result is arr of transactions, we filter it by matching the description which includes the search term
+        ) =>
+          // and update the result arr with only those transactions
+          transaction.description?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -132,6 +136,7 @@ export function TransactionTable({ transactions }) {
     return result;
   }, [transactions, searchTerm, typeFilter, recurringFilter, sortConfig]); // useMemo will re-run this filtering and sorting logic only when any of these dependencies change.
   // React re-renders a lot. useMemo ensures this filtering + sorting logic is only run when needed — that is, only when one of these changes
+  // useMemo stores result in cached memory, so it doesn't have to redo the work every time the component re-renders
   // We store the result in a variable (filteredAndSortedTransactions) because we want to use that filtered and sorted list later in our component
 
   //- Pagination calculations
@@ -145,7 +150,8 @@ export function TransactionTable({ transactions }) {
     //- This useMemo slices the big list of filtered transactions to show just the ones for the current page.
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE; // currentPage is the page number the user is on. then figure out where to start cutting the list.
     return filteredAndSortedTransactions.slice(
-      // .slice(startIndex, startIndex + ITEMS_PER_PAGE): get only the portion that should be shown on this page
+      // .slice(startIndex, startIndex + ITEMS_PER_PAGE): from filteredAndSortedTransactions, take a slice starting from startIndex to the next
+      // ITEMS_PER_PAGE items to show only the transactions for the current page.
       startIndex,
       startIndex + ITEMS_PER_PAGE
     );
@@ -200,7 +206,8 @@ export function TransactionTable({ transactions }) {
     )
       return;
 
-    deleteFn(selectedIds);
+    await deleteFn(selectedIds); // assuming it's async
+    setSelectedIds([]); // clear selectedIds after deletion
   };
 
   useEffect(() => {
@@ -222,30 +229,33 @@ export function TransactionTable({ transactions }) {
   };
 
   return (
-    <div className="space-y-6 px-5">
+    <div className="space-y-4 px-5">
       {/* Loading Bar which shows when transactions are being deleted */}
       {deleteLoading && ( // If deleteLoading is true, it means transactions are being deleted, so show a loading bar
         <BarLoader className="mt-4" width={"100%"} color="#06b6d4" />
       )}
 
       {/* Filters and Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+        {/* Search Box */}
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-cyan-500" />
           <Input
             placeholder="Search transactions..."
             value={searchTerm} // This is the search input where users can type to filter transactions, value will be controlled by searchTerm state
             onChange={(e) => {
-              // onChange updates the searchTerm state when the user types
-              setSearchTerm(e.target.value); // e.target.value is the current value of the input field
-              setCurrentPage(1); // Reset to first page when search term changes
+              // When the input changes, update the searchTerm state
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
             }}
-            className="pl-8 border-cyan-500 focus-visible:ring-cyan-500"
+            className="pl-8 border-cyan-500 focus-visible:ring-cyan-500 h-10"
           />
         </div>
 
-        <div className="flex gap-2">
-          <Select //- This is a dropdown for filtering by transaction type (INCOME/EXPENSE)
+        {/* Filter & Actions */}
+        <div className="flex gap-2 items-stretch">
+          {/* Type Filter */}
+          <Select //- This is a dropdown for filtering by transaction type
             value={typeFilter} // value is controlled by typeFilter state , it consists of two options: "INCOME" and "EXPENSE"
             onValueChange={(value) => {
               // onValueChange updates the typeFilter state when the user selects a type
@@ -253,8 +263,8 @@ export function TransactionTable({ transactions }) {
               setCurrentPage(1);
             }}
           >
-            <SelectTrigger className="w-[130px] border-cyan-500">
-              <SelectValue placeholder="All Types" />
+            <SelectTrigger className="w-[130px] h-10 border-cyan-500 truncate">
+              <SelectValue placeholder="All Types" className="truncate" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="INCOME">Income</SelectItem>
@@ -262,15 +272,19 @@ export function TransactionTable({ transactions }) {
             </SelectContent>
           </Select>
 
+          {/* Recurring Filter */}
           <Select //- This is a dropdown for filtering by recurring transactions
-            value={recurringFilter} // value is controlled by recurringFilter state , it consists of two options: "recurring" and "non-recurring"
+            value={recurringFilter}
             onValueChange={(value) => {
               setRecurringFilter(value);
               setCurrentPage(1);
             }}
           >
-            <SelectTrigger className="w-[130px] border-cyan-500">
-              <SelectValue placeholder="All Transactions" />
+            <SelectTrigger className="w-[150px] h-10 border-cyan-500 truncate">
+              <SelectValue
+                placeholder="All Transactions"
+                className="truncate"
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="recurring">Recurring Only</SelectItem>
@@ -278,26 +292,28 @@ export function TransactionTable({ transactions }) {
             </SelectContent>
           </Select>
 
+          {/* Delete Button */}
           {selectedIds.length > 0 && ( // If there are selected transactions, show the bulk delete button
             // This button will delete all selected transactions when clicked
             <Button
               variant="destructive"
               size="sm"
-              onClick={handleBulkDelete} // Calls handleBulkDelete function which will delete the selected transactions
-              className="bg-red-600 hover:bg-red-700"
+              onClick={handleBulkDelete}
+              className="h-10 bg-red-600 hover:bg-red-700 whitespace-nowrap"
             >
               <Trash className="h-4 w-4 mr-2" />
               Delete Selected ({selectedIds.length})
             </Button>
           )}
 
+          {/* Clear Filters Button */}
           {(searchTerm || typeFilter || recurringFilter) && ( // If any filter is applied, show the clear filters button
             <Button
               variant="outline"
               size="icon"
               onClick={handleClearFilters} // Calls handleClearFilters function which will reset all filters and search term
               title="Clear filters"
-              className="border-cyan-500 text-cyan-600 hover:bg-cyan-50"
+              className="h-10 border-cyan-500 text-cyan-600 hover:bg-cyan-50"
             >
               <X className="h-4 w-5" />
             </Button>
@@ -313,7 +329,8 @@ export function TransactionTable({ transactions }) {
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={ // This checkbox will select or deselect all transactions on the current page
+                  checked={
+                    // This checkbox will select or deselect all transactions on the current page
                     selectedIds.length === paginatedTransactions.length &&
                     paginatedTransactions.length > 0
                   }
@@ -384,7 +401,6 @@ export function TransactionTable({ transactions }) {
                   transaction // paginatedTransactions is the list of transactions for the current page where we map through each transaction
                 ) => (
                   <TableRow key={transaction.id}>
-                    {" "}
                     {/* Each transaction has a unique ID */}
                     {/* Existing logic, but refined colors */}
                     <TableCell>
@@ -485,7 +501,13 @@ export function TransactionTable({ transactions }) {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={() => deleteFn([transaction.id])} // This calls the delete function with the transaction ID
+                            onClick={() => {
+                              deleteFn([transaction.id]); // delete the transaction
+                              setSelectedIds((prev) =>
+                                prev.filter((id) => id !== transaction.id)
+                              ); // remove it from selectedIds
+                            }}
+                            // This calls the delete function with the transaction ID
                           >
                             Delete
                           </DropdownMenuItem>

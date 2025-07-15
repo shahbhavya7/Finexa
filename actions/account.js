@@ -62,19 +62,19 @@ export async function getAccountWithTransactions(accountId) { // Function to get
   };
 }
 
-export async function bulkDeleteTransactions(transactionIds) {
+export async function bulkDeleteTransactions(transactionIds) { // Function to delete multiple transactions and update account balances accordingly
   try {
     const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Unauthorized"); // Check if the user is authenticated
 
-    const user = await db.user.findUnique({
+    const user = await db.user.findUnique({ // Fetch the user from the database using Prisma client
       where: { clerkUserId: userId },
     });
 
-    if (!user) throw new Error("User not found");
+    if (!user) throw new Error("User not found"); // If user not found, throw an error
 
     // Get transactions to calculate balance changes
-    const transactions = await db.transaction.findMany({
+    const transactions = await db.transaction.findMany({ // Fetch transactions that match the provided transaction IDs and belong to the authenticated user
       where: {
         id: { in: transactionIds },
         userId: user.id,
@@ -82,19 +82,20 @@ export async function bulkDeleteTransactions(transactionIds) {
     });
 
     // Group transactions by account to update balances
-    const accountBalanceChanges = transactions.reduce((acc, transaction) => {
-      const change =
-        transaction.type === "EXPENSE"
+    const accountBalanceChanges = transactions.reduce((acc, transaction) => { // Reduce the transactions to calculate the balance changes for each account
+      const change = 
+        transaction.type === "EXPENSE" // If the transaction type is "EXPENSE", just use the amount as is else if it's "INCOME", negate the amount
           ? transaction.amount
           : -transaction.amount;
-      acc[transaction.accountId] = (acc[transaction.accountId] || 0) + change;
-      return acc;
+      acc[transaction.accountId] = (acc[transaction.accountId] || 0) + change; // Accumulate the balance change for each account by adding the change 
+      // amount to the existing balance change for that account
+      return acc; // Return the accumulator object which now contains the total balance changes for each account
     }, {});
 
     // Delete transactions and update account balances in a transaction
-    await db.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => { // Use a transaction to ensure atomicity, meaning either all operations succeed or none do
       // Delete transactions
-      await tx.transaction.deleteMany({
+      await tx.transaction.deleteMany({ // Delete all transactions that match the provided transaction IDs and belong to the authenticated user
         where: {
           id: { in: transactionIds },
           userId: user.id,
@@ -102,22 +103,22 @@ export async function bulkDeleteTransactions(transactionIds) {
       });
 
       // Update account balances
-      for (const [accountId, balanceChange] of Object.entries(
-        accountBalanceChanges
+      for (const [accountId, balanceChange] of Object.entries( // Iterate over each account and its corresponding balance change
+        accountBalanceChanges // Object.entries converts the object into an array of [key, value] pairs, here key is accountId and value is balanceChange
       )) {
         await tx.account.update({
-          where: { id: accountId },
-          data: {
+          where: { id: accountId }, // take out the accountId from the key
+          data: { // Update the account's balance by incrementing it with the calculated balance change
             balance: {
-              increment: balanceChange,
+              increment: balanceChange, // increament is a Prisma method to increment the balance by the specified amount
             },
           },
         });
       }
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath("/account/[id]");
+    revalidatePath("/dashboard"); // Revalidate the dashboard path to update the UI with the new account balances
+    revalidatePath("/account/[id]"); // Revalidate the account details page to reflect the changes made
 
     return { success: true };
   } catch (error) {
