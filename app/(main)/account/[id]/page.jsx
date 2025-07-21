@@ -6,7 +6,8 @@ import NotFound from '../../../not-found';
 import { AccountChart } from "../_components/account-chart";
 
 export default async function AccountPage({ params }) {
-  const accountData = await getAccountWithTransactions(params.id);
+  const { id } = params;
+  const accountData = await getAccountWithTransactions(id);
 
   if (!accountData) {
     return <NotFound />; // Return a NotFound component if account data is not found
