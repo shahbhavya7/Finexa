@@ -30,7 +30,7 @@ export const transactionSchema = z
   })
   .superRefine((data, ctx) => { // Custom validation to ensure that if the transaction is recurring, a recurring interval must be provided
     if (data.isRecurring && !data.recurringInterval) {
-      ctx.addIssue({
+      ctx.addIssue({ // If the transaction is recurring but no interval is provided, add a custom validation error
         code: z.ZodIssueCode.custom,
         message: "Recurring interval is required for recurring transactions",
         path: ["recurringInterval"],
