@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-//import aj from "@/lib/arcjet";
+import aj from "@/lib/arcjet";
 import { request } from "@arcjet/next";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -23,28 +23,28 @@ export async function createTransaction(data) {
     // Get request data for ArcJet
     const req = await request();
 
-    // Check rate limit
-    // const decision = await aj.protect(req, {
-    //   userId,
-    //   requested: 1, // Specify how many tokens to consume
-    // });
+   // Check rate limit
+    const decision = await aj.protect(req, {
+      userId,
+      requested: 1, // Specify how many tokens to consume per request, one request consumes one token and we have set the refill rate to 10 tokens per hour
+    });
 
-    // if (decision.isDenied()) {
-    //   if (decision.reason.isRateLimit()) {
-    //     const { remaining, reset } = decision.reason;
-    //     console.error({
-    //       code: "RATE_LIMIT_EXCEEDED",
-    //       details: {
-    //         remaining,
-    //         resetInSeconds: reset,
-    //       },
-    //     });
+    if (decision.isDenied()) { // If the request is denied, handle rate limiting
+      if (decision.reason.isRateLimit()) {
+        const { remaining, reset } = decision.reason;
+        console.error({
+          code: "RATE_LIMIT_EXCEEDED",
+          details: {
+            remaining,
+            resetInSeconds: reset,
+          },
+        });
 
-    //     throw new Error("Too many requests. Please try again later.");
-    //   }
+        throw new Error("Too many requests. Please try again later."); // Inform user about rate limit
+      }
 
-    //   throw new Error("Request blocked");
-    // }
+      throw new Error("Request blocked"); // If the request is blocked for any other reason
+    }
 
     const user = await db.user.findUnique({ // Ensure user exists
       where: { clerkUserId: userId },
@@ -231,11 +231,11 @@ export async function getUserTransactions(query = {}) {
 // Scan Receipt
 export async function scanReceipt(file) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    // Convert File to ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    // Convert ArrayBuffer to Base64
+    // Convert File to ArrayBuffer as required by Gemini
+    const arrayBuffer = await file.arrayBuffer(); 
+    // Convert ArrayBuffer to Base64 as Gemini expects base64 encoded data
     const base64String = Buffer.from(arrayBuffer).toString("base64");
 
     const prompt = `
@@ -258,23 +258,23 @@ export async function scanReceipt(file) {
       If its not a recipt, return an empty object
     `;
 
-    const result = await model.generateContent([
+    const result = await model.generateContent([ // Use inline data to pass the base64 encoded image
       {
         inlineData: {
           data: base64String,
           mimeType: file.type,
         },
       },
-      prompt,
+      prompt, // Pass the prompt to Gemini
     ]);
 
-    const response = await result.response;
-    const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+    const response = await result.response; // Get the response from Gemini
+    const text = response.text(); // Extract the text from the response
+    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim(); // Clean the text to remove any code block formatting
 
     try {
-      const data = JSON.parse(cleanedText);
-      return {
+      const data = JSON.parse(cleanedText); // Parse the cleaned text as JSON
+      return { // Return the parsed data
         amount: parseFloat(data.amount),
         date: new Date(data.date),
         description: data.description,

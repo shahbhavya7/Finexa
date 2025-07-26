@@ -16,7 +16,8 @@ export default async function AddTransactionPage({ searchParams }) {
   return (
     <div className="max-w-3xl mx-auto px-5">
       <div className="flex justify-center md:justify-normal mb-8">
-        <h1 className="text-5xl gradient-title ">Add Transaction</h1>
+        <h1 className="text-5xl gradient-title bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-500 
+                 bg-clip-text text-transparent animate-gradient-slow leading-tight ">Add Transaction</h1>
       </div>
       <AddTransactionForm
         accounts={accounts}

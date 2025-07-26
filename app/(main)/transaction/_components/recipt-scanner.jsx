@@ -34,7 +34,7 @@ export function ReceiptScanner({ onScanComplete }) {
 
   return (
     <div className="flex items-center gap-4">
-      <input
+      <input // Hidden file input for scanning receipts
         type="file"
         ref={fileInputRef}
         className="hidden"
@@ -48,7 +48,8 @@ export function ReceiptScanner({ onScanComplete }) {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-10 bg-gradient-to-br from-orange-500 via-pink-500 to-purple-500 animate-gradient hover:opacity-90 transition-opacity text-white hover:text-white"
+       className="w-full h-10 bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 hover:opacity-90 transition-opacity text-white hover:text-white rounded-md shadow-md"
+
         onClick={() => fileInputRef.current?.click()}
         disabled={scanReceiptLoading}
       >
