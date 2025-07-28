@@ -34,7 +34,7 @@ import { ReceiptScanner } from "./recipt-scanner";
 export function AddTransactionForm({
   accounts,
   categories,
-  editMode = false,
+  editMode = false, // editMode is true if the user is editing an existing transaction, many things will change based on this
   initialData = null,
 }) {
   const router = useRouter();
@@ -94,14 +94,14 @@ export function AddTransactionForm({
     }
   };
 
-  const handleScanComplete = (scannedData) => {
-    if (scannedData) {
-      setValue("amount", scannedData.amount.toString());
-      setValue("date", new Date(scannedData.date));
-      if (scannedData.description) {
+  const handleScanComplete = (scannedData) => { // this handles the scanned data from the ReceiptScanner component
+    if (scannedData) { // If scanned data is available, set the form values with the scanned data
+      setValue("amount", scannedData.amount.toString()); // Set the amount from scanned data to string for input compatibility
+      setValue("date", new Date(scannedData.date)); // Set the date from scanned data
+      if (scannedData.description) { // If description is available in scanned data, set it
         setValue("description", scannedData.description);
       }
-      if (scannedData.category) {
+      if (scannedData.category) { // If category is available in scanned data, set it
         setValue("category", scannedData.category);
       }
       toast.success("Receipt scanned successfully");
@@ -181,7 +181,7 @@ export function AddTransactionForm({
               <SelectContent>
                 {accounts.map((account) => ( // Map through accounts and create a SelectItem for each account
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name} (${parseFloat(account.balance).toFixed(2)}) {/* Display account name and balance */}
+                    {account.name} (₹{parseFloat(account.balance).toFixed(2)}) {/* Display account name and balance */}
                   </SelectItem>
                 ))}
                 {/* Create Account option to open the CreateAccountDrawer */}

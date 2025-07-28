@@ -100,17 +100,17 @@ export async function createTransaction(data) {
   }
 }
 
-export async function getTransaction(id) {
+export async function getTransaction(id) { // Get Transaction by ID
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
+  const user = await db.user.findUnique({ // Ensure user exists
     where: { clerkUserId: userId },
   });
 
   if (!user) throw new Error("User not found");
 
-  const transaction = await db.transaction.findUnique({
+  const transaction = await db.transaction.findUnique({ // Find transaction by ID and user ID
     where: {
       id,
       userId: user.id,
@@ -119,7 +119,7 @@ export async function getTransaction(id) {
 
   if (!transaction) throw new Error("Transaction not found");
 
-  return serializeAmount(transaction);
+  return serializeAmount(transaction); // Return serialized transaction data
 }
 
 export async function updateTransaction(id, data) {
@@ -134,8 +134,8 @@ export async function updateTransaction(id, data) {
     if (!user) throw new Error("User not found");
 
     // Get original transaction to calculate balance change
-    const originalTransaction = await db.transaction.findUnique({
-      where: {
+    const originalTransaction = await db.transaction.findUnique({ // Find original transaction by ID and user ID
+      where: { 
         id,
         userId: user.id,
       },
@@ -144,64 +144,65 @@ export async function updateTransaction(id, data) {
       },
     });
 
-    if (!originalTransaction) throw new Error("Transaction not found");
+    if (!originalTransaction) throw new Error("Transaction not found"); // Ensure original transaction exists
 
     // Calculate balance changes
-    const oldBalanceChange =
-      originalTransaction.type === "EXPENSE"
+    const oldBalanceChange = 
+      originalTransaction.type === "EXPENSE" // If the original transaction was an expense, subtract its amount from the balance else add it
         ? -originalTransaction.amount.toNumber()
         : originalTransaction.amount.toNumber();
+ 
+    const newBalanceChange = // Calculate new balance change based on updated transaction type
+      data.type === "EXPENSE" ? -data.amount : data.amount; // If the updated transaction is an expense, subtract its amount from the balance else add it
 
-    const newBalanceChange =
-      data.type === "EXPENSE" ? -data.amount : data.amount;
-
-    const netBalanceChange = newBalanceChange - oldBalanceChange;
+    const netBalanceChange = newBalanceChange - oldBalanceChange; // Calculate net balance change by subtracting old balance change from new balance change
 
     // Update transaction and account balance in a transaction
-    const transaction = await db.$transaction(async (tx) => {
-      const updated = await tx.transaction.update({
+    const transaction = await db.$transaction(async (tx) => { // Use prisma transaction to ensure atomicity
+      const updated = await tx.transaction.update({ // Update transaction with new data
         where: {
           id,
           userId: user.id,
         },
-        data: {
-          ...data,
-          nextRecurringDate:
-            data.isRecurring && data.recurringInterval
+        data: { 
+          ...data, // Update transaction with provided updated data on frontend which includes the new amount, type, date, etc.
+          nextRecurringDate: // calculate next recurring date to set if transaction is recurring , only if transaction is recurring
+            data.isRecurring && data.recurringInterval // if transaction is recurring
               ? calculateNextRecurringDate(data.date, data.recurringInterval)
               : null,
         },
       });
 
       // Update account balance
-      await tx.account.update({
+      await tx.account.update({ // Update account balance based on net balance change
         where: { id: data.accountId },
         data: {
-          balance: {
+          balance: { // Update account balance by incrementing it with the net balance change
             increment: netBalanceChange,
           },
         },
       });
 
-      return updated;
+      return updated; // Return updated transaction
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath(`/account/${data.accountId}`);
+    revalidatePath("/dashboard"); // Revalidate dashboard path to reflect updated transaction
+    revalidatePath(`/account/${data.accountId}`); // Revalidate account path to reflect updated balance
 
-    return { success: true, data: serializeAmount(transaction) };
+    return { success: true, data: serializeAmount(transaction) }; // Return success response with serialized updated transaction data
   } catch (error) {
     throw new Error(error.message);
   }
 }
 
-// Get User Transactions
-export async function getUserTransactions(query = {}) {
+// Get User Transactions by Query
+// This function retrieves transactions for the authenticated user based on the provided query parameters.
+export async function getUserTransactions(query = {}) { 
   try {
-    const { userId } = await auth();
+    const { userId } = await auth(); // Ensure user is authenticated
     if (!userId) throw new Error("Unauthorized");
 
-    const user = await db.user.findUnique({
+    const user = await db.user.findUnique({ 
       where: { clerkUserId: userId },
     });
 
@@ -209,12 +210,13 @@ export async function getUserTransactions(query = {}) {
       throw new Error("User not found");
     }
 
-    const transactions = await db.transaction.findMany({
+    const transactions = await db.transaction.findMany({ // Retrieve transactions for the user based on the query
+      // Use the provided query to filter transactions
       where: {
-        userId: user.id,
-        ...query,
+        userId: user.id, // Ensure transactions belong to the authenticated user
+        ...query, // Apply any additional filters from the query
       },
-      include: {
+      include: {  
         account: true,
       },
       orderBy: {
@@ -222,7 +224,7 @@ export async function getUserTransactions(query = {}) {
       },
     });
 
-    return { success: true, data: transactions };
+    return { success: true, data: transactions }; // Return the retrieved transactions
   } catch (error) {
     throw new Error(error.message);
   }

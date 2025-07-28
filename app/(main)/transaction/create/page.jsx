@@ -3,12 +3,13 @@ import { defaultCategories } from "@/data/categories";
 import { AddTransactionForm } from "../_components/transaction-form";
 import { getTransaction } from "@/actions/transaction";
 
-export default async function AddTransactionPage({ searchParams }) {
+export default async function AddTransactionPage({ searchParams }) { // searchParams is used to get the edit id if the user is editing an existing transaction
+  // searchParams comes from the URL and allows us to fetch the transaction data if the user is editing an existing transaction
   const accounts = await getUserAccounts(); // Fetch user accounts
   const editId = searchParams?.edit;
 
-  let initialData = null;
-  if (editId) {
+  let initialData = null; // Initialize initialData to null, it will be used to prefill the form if the user is editing an existing transaction
+  if (editId) { // If editId is present, fetch the transaction data to prefill the form
     const transaction = await getTransaction(editId);
     initialData = transaction;
   }
@@ -22,7 +23,7 @@ export default async function AddTransactionPage({ searchParams }) {
       <AddTransactionForm
         accounts={accounts}
         categories={defaultCategories}
-        editMode={!!editId}
+        editMode={!!editId} // editMode is true if the user is editing an existing transaction ,true if editId is present
         initialData={initialData}
       />
     </div>
