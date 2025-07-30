@@ -1,21 +1,21 @@
 import { Suspense } from "react";
 import { getUserAccounts } from "@/actions/dashboard";
-//import { getDashboardData } from "@/actions/dashboard";
+import { getDashboardData } from "@/actions/dashboard";
 import { getCurrentBudget } from "@/actions/budget";
 import { AccountCard } from "./_components/account-card";
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { BudgetProgress } from "./_components/budget-progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
-//import { DashboardOverview } from "./_components/transaction-overview";
+import { DashboardOverview } from "./_components/transaction-overview";
 
 export default async function DashboardPage() {
-  const accounts = await getUserAccounts(); // Fetch user accounts using the server action, here hooks not used as this is a server component, hooks are only
+  //const accounts = await getUserAccounts(); // Fetch user accounts using the server action, here hooks not used as this is a server component, hooks are only
   // used in client components , in server side we dont use as we can directly call the server action and get the data
-  // const [accounts, transactions] = await Promise.all([
-  //   getUserAccounts(),
-  //   getDashboardData(),
-  // ]);
+  const [accounts, transactions] = await Promise.all([
+    getUserAccounts(),
+    getDashboardData(),
+  ]);
 
   const defaultAccount = accounts?.find((account) => account.isDefault); // Find the default account from the list of accounts
 
@@ -34,10 +34,10 @@ export default async function DashboardPage() {
       />
 
       {/* Dashboard Overview */}
-      {/* <DashboardOverview
+      <DashboardOverview
         accounts={accounts}
         transactions={transactions || []}
-      /> */}
+      />
 
       {/* Accounts Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

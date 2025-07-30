@@ -113,10 +113,10 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
               <>
                 <CardDescription className="text-cyan-600">
                   {initialBudget // If initial budget exists, display the current budget and expenses else show a message indicating no budget is set
-                    ? `$${currentExpenses.toFixed(
+                    ? `₹${currentExpenses.toFixed(
                         // Format current expenses to 2 decimal places
                         2
-                      )} of $${initialBudget.amount.toFixed(2)} spent`
+                      )} of ₹${initialBudget.amount.toFixed(2)} spent`
                     : "No budget set"}
                 </CardDescription>
                 <Button // Button to enter edit mode

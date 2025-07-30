@@ -67,7 +67,7 @@ export function AccountCard({ account }) {
 
     <CardContent>
       <div className="text-2xl font-bold text-cyan-900">
-        ${parseFloat(balance).toFixed(2)}
+        ₹{parseFloat(balance).toFixed(2)}
       </div>
       <p className="text-sm text-cyan-500">
         {type.charAt(0) + type.slice(1).toLowerCase()} Account

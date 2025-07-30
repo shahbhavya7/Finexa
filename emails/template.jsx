@@ -50,6 +50,8 @@ export default function EmailTemplate({
   type = "monthly-report",
   data = {},
 }) {
+  const formatNumber = (num) =>
+    typeof num === "number" ? `₹${num.toFixed(2)}` : "₹0.00";
   if (type === "monthly-report") {
     return (
       <Html>
@@ -57,27 +59,38 @@ export default function EmailTemplate({
         <Preview>Your Monthly Financial Report</Preview>
         <Body style={styles.body}>
           <Container style={styles.container}>
-            <Heading style={styles.title}>Monthly Financial Report</Heading>
+            {/* Header */}
+            <Section style={styles.header}>
+              <Heading style={styles.title}>Monthly Financial Report</Heading>
+              <Text style={styles.subtitle}>{data?.month} Summary</Text>
+            </Section>
 
             <Text style={styles.text}>Hello {userName},</Text>
             <Text style={styles.text}>
-              Here&rsquo;s your financial summary for {data?.month}:
+              Here’s your financial summary for {data?.month}:
             </Text>
 
             {/* Main Stats */}
             <Section style={styles.statsContainer}>
               <div style={styles.stat}>
-                <Text style={styles.text}>Total Income</Text>
-                <Text style={styles.heading}>${data?.stats.totalIncome}</Text>
+                <Text style={styles.statLabel}>Total Income</Text>
+                <Text style={styles.statValue}>
+                  {formatNumber(data?.stats?.totalIncome)}
+                </Text>
               </div>
               <div style={styles.stat}>
-                <Text style={styles.text}>Total Expenses</Text>
-                <Text style={styles.heading}>${data?.stats.totalExpenses}</Text>
+                <Text style={styles.statLabel}>Total Expenses</Text>
+                <Text style={styles.statValue}>
+                  {formatNumber(data?.stats?.totalExpenses)}
+                </Text>
               </div>
               <div style={styles.stat}>
-                <Text style={styles.text}>Net</Text>
-                <Text style={styles.heading}>
-                  ${data?.stats.totalIncome - data?.stats.totalExpenses}
+                <Text style={styles.statLabel}>Net</Text>
+                <Text style={styles.statValue}>
+                  {formatNumber(
+                    (data?.stats?.totalIncome || 0) -
+                      (data?.stats?.totalExpenses || 0)
+                  )}
                 </Text>
               </div>
             </Section>
@@ -85,12 +98,16 @@ export default function EmailTemplate({
             {/* Category Breakdown */}
             {data?.stats?.byCategory && (
               <Section style={styles.section}>
-                <Heading style={styles.heading}>Expenses by Category</Heading>
-                {Object.entries(data?.stats.byCategory).map(
+                <Heading style={styles.sectionTitle}>
+                  Expenses by Category
+                </Heading>
+                {Object.entries(data.stats.byCategory).map(
                   ([category, amount]) => (
                     <div key={category} style={styles.row}>
-                      <Text style={styles.text}>{category}</Text>
-                      <Text style={styles.text}>${amount}</Text>
+                      <Text style={styles.categoryLabel}>{category}: </Text>
+                      <Text style={styles.categoryValue}>
+                        {formatNumber(amount)}
+                      </Text>
                     </div>
                   )
                 )}
@@ -100,9 +117,9 @@ export default function EmailTemplate({
             {/* AI Insights */}
             {data?.insights && (
               <Section style={styles.section}>
-                <Heading style={styles.heading}>Welth Insights</Heading>
+                <Heading style={styles.sectionTitle}>Finexa Insights</Heading>
                 {data.insights.map((insight, index) => (
-                  <Text key={index} style={styles.text}>
+                  <Text key={index} style={styles.insight}>
                     • {insight}
                   </Text>
                 ))}
@@ -110,8 +127,8 @@ export default function EmailTemplate({
             )}
 
             <Text style={styles.footer}>
-              Thank you for using Welth. Keep tracking your finances for better
-              financial health!
+              Thank you for using <b>Finexa</b>. Keep tracking your finances for
+              better financial health!
             </Text>
           </Container>
         </Body>
@@ -120,103 +137,152 @@ export default function EmailTemplate({
   }
 
   if (type === "budget-alert") {
-    return (
-      <Html>
-        <Head />
-        <Preview>Budget Alert</Preview>
-        <Body style={styles.body}>
-          <Container style={styles.container}>
+  const formatNumber = (num) =>
+    typeof num === "number" ? `₹${num.toFixed(2)}` : "₹0.00";
+
+  return (
+    <Html>
+      <Head />
+      <Preview>Budget Alert</Preview>
+      <Body style={styles.body}>
+        <Container style={styles.container}>
+          {/* Header */}
+          <Section style={styles.header}>
             <Heading style={styles.title}>Budget Alert</Heading>
-            <Text style={styles.text}>Hello {userName},</Text>
-            <Text style={styles.text}>
-              You&rsquo;ve used {data?.percentageUsed.toFixed(1)}% of your
-              monthly budget.
-            </Text>
-            <Section style={styles.statsContainer}>
-              <div style={styles.stat}>
-                <Text style={styles.text}>Budget Amount</Text>
-                <Text style={styles.heading}>${data?.budgetAmount}</Text>
-              </div>
-              <div style={styles.stat}>
-                <Text style={styles.text}>Spent So Far</Text>
-                <Text style={styles.heading}>${data?.totalExpenses}</Text>
-              </div>
-              <div style={styles.stat}>
-                <Text style={styles.text}>Remaining</Text>
-                <Text style={styles.heading}>
-                  ${data?.budgetAmount - data?.totalExpenses}
-                </Text>
-              </div>
-            </Section>
-          </Container>
-        </Body>
-      </Html>
-    );
-  }
+            <Text style={styles.subtitle}>Spending Overview</Text>
+          </Section>
+
+          <Text style={styles.text}>Hello {userName},</Text>
+          <Text style={styles.text}>
+            You’ve used {data?.percentageUsed?.toFixed(1) || 0}% of your monthly budget.
+          </Text>
+
+          {/* Stats */}
+          <Section style={styles.statsContainer}>
+            <div style={styles.stat}>
+              <Text style={styles.statLabel}>Budget Amount</Text>
+              <Text style={styles.statValue}>
+                {formatNumber(data?.budgetAmount)}
+              </Text>
+            </div>
+            <div style={styles.stat}>
+              <Text style={styles.statLabel}>Spent So Far</Text>
+              <Text style={styles.statValue}>
+                {formatNumber(data?.totalExpenses)}
+              </Text>
+            </div>
+            <div style={styles.stat}>
+              <Text style={styles.statLabel}>Remaining</Text>
+              <Text style={styles.statValue}>
+                {formatNumber(
+                  (data?.budgetAmount || 0) - (data?.totalExpenses || 0)
+                )}
+              </Text>
+            </div>
+          </Section>
+
+          <Text style={styles.footer}>
+            Stay on track and keep your spending under control.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
 }
 
 const styles = {
   body: {
-    backgroundColor: "#f6f9fc",
-    fontFamily: "-apple-system, sans-serif",
+    backgroundColor: "#E6F7FA",
+    fontFamily: "'Segoe UI', Arial, sans-serif",
   },
   container: {
     backgroundColor: "#ffffff",
     margin: "0 auto",
     padding: "20px",
-    borderRadius: "5px",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+    maxWidth: "600px",
+  },
+  header: {
+    background: "linear-gradient(to right, #00BCD4, #0288D1)",
+    padding: "20px",
+    borderRadius: "8px 8px 0 0",
+    textAlign: "center",
   },
   title: {
-    color: "#1f2937",
-    fontSize: "32px",
+    color: "#ffffff",
+    fontSize: "24px",
     fontWeight: "bold",
-    textAlign: "center",
-    margin: "0 0 20px",
+    margin: "0",
   },
-  heading: {
-    color: "#1f2937",
-    fontSize: "20px",
-    fontWeight: "600",
-    margin: "0 0 16px",
+  subtitle: {
+    color: "#b2ebf2",
+    fontSize: "14px",
+    margin: "4px 0 0 0",
   },
   text: {
-    color: "#4b5563",
+    color: "#004d61",
     fontSize: "16px",
-    margin: "0 0 16px",
-  },
-  section: {
-    marginTop: "32px",
-    padding: "20px",
-    backgroundColor: "#f9fafb",
-    borderRadius: "5px",
-    border: "1px solid #e5e7eb",
+    margin: "16px 0",
   },
   statsContainer: {
-    margin: "32px 0",
-    padding: "20px",
-    backgroundColor: "#f9fafb",
-    borderRadius: "5px",
+    marginTop: "20px",
+    padding: "16px",
+    backgroundColor: "#F0FCFF",
+    borderRadius: "6px",
+    border: "1px solid #B2EBF2",
   },
   stat: {
-    marginBottom: "16px",
-    padding: "12px",
-    backgroundColor: "#fff",
-    borderRadius: "4px",
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+    marginBottom: "12px",
+  },
+  statLabel: {
+    color: "#0097A7",
+    fontSize: "14px",
+  },
+  statValue: {
+    color: "#006064",
+    fontSize: "20px",
+    fontWeight: "bold",
+  },
+  section: {
+    marginTop: "20px",
+    padding: "16px",
+    backgroundColor: "#F0FCFF",
+    borderRadius: "6px",
+    border: "1px solid #B2EBF2",
+  },
+  sectionTitle: {
+    color: "#006064",
+    fontSize: "18px",
+    fontWeight: "600",
+    marginBottom: "12px",
   },
   row: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "12px 0",
-    borderBottom: "1px solid #e5e7eb",
+    padding: "6px 0",
+    borderBottom: "1px solid #B2EBF2",
+  },
+  categoryLabel: {
+    color: "#004d61",
+  },
+  categoryValue: {
+    color: "#004d61",
+    fontWeight: "500",
+  },
+  insight: {
+    color: "#006064",
+    fontSize: "14px",
+    marginBottom: "8px",
   },
   footer: {
-    color: "#6b7280",
+    color: "#00796B",
     fontSize: "14px",
     textAlign: "center",
-    marginTop: "32px",
-    paddingTop: "16px",
-    borderTop: "1px solid #e5e7eb",
+    marginTop: "24px",
+    paddingTop: "12px",
+    borderTop: "1px solid #B2EBF2",
   },
 };
