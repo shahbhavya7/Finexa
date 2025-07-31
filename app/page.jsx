@@ -87,26 +87,13 @@ export default function Home() {
                 key={index}
                 className="p-6 shadow-sm hover:shadow-md transition"
               >
-                <CardContent className="pt-4">
-                  <div className="flex items-center mb-4">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                    <div className="ml-4">
-                      <div className="font-semibold text-cyan-600">
-                        {testimonial.name}
-                      </div>
-                      <div className="text-sm text-cyan-600">
-                        {testimonial.role}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-cyan-800">{testimonial.quote}</p>
-                </CardContent>
+   <CardContent className="pt-4">
+  <div className="mb-4 text-center">
+    <div className="font-semibold text-cyan-600">{testimonial.name}</div>
+    <div className="text-sm text-cyan-600">{testimonial.role}</div>
+  </div>
+  <p className="text-cyan-800 text-center">{testimonial.quote}</p>
+</CardContent>
               </Card>
             ))}
           </div>
