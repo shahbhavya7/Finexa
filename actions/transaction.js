@@ -21,30 +21,30 @@ export async function createTransaction(data) {
     if (!userId) throw new Error("Unauthorized");
 
     // Get request data for ArcJet
-    const req = await request();
+  //   const req = await request();
 
-   // Check rate limit
-    const decision = await aj.protect(req, {
-      userId,
-      requested: 1, // Specify how many tokens to consume per request, one request consumes one token and we have set the refill rate to 10 tokens per hour
-    });
+  //  // Check rate limit
+  //   const decision = await aj.protect(req, {
+  //     userId,
+  //     requested: 1, // Specify how many tokens to consume per request, one request consumes one token and we have set the refill rate to 10 tokens per hour
+  //   });
 
-    if (decision.isDenied()) { // If the request is denied, handle rate limiting
-      if (decision.reason.isRateLimit()) {
-        const { remaining, reset } = decision.reason;
-        console.error({
-          code: "RATE_LIMIT_EXCEEDED",
-          details: {
-            remaining,
-            resetInSeconds: reset,
-          },
-        });
+  //   if (decision.isDenied()) { // If the request is denied, handle rate limiting
+  //     if (decision.reason.isRateLimit()) {
+  //       const { remaining, reset } = decision.reason;
+  //       console.error({
+  //         code: "RATE_LIMIT_EXCEEDED",
+  //         details: {
+  //           remaining,
+  //           resetInSeconds: reset,
+  //         },
+  //       });
 
-        throw new Error("Too many requests. Please try again later."); // Inform user about rate limit
-      }
+  //       throw new Error("Too many requests. Please try again later."); // Inform user about rate limit
+  //     }
 
-      throw new Error("Request blocked"); // If the request is blocked for any other reason
-    }
+  //     throw new Error("Request blocked"); // If the request is blocked for any other reason
+  //   }
 
     const user = await db.user.findUnique({ // Ensure user exists
       where: { clerkUserId: userId },
