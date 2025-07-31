@@ -72,7 +72,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
   }, [error]);
 
   return (
-    <Card className="bg-white shadow-sm rounded-2xl">
+    <Card className="bg-white shadow-sm rounded-2xl border border-cyan-200 hover:shadow-cyan-300/40 hover:shadow-md transition-shadow cursor-pointer group relative">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex-1">
           <CardTitle className="text-sm font-medium text-cyan-700">

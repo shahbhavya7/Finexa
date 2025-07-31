@@ -33,46 +33,52 @@ const COLORS = [
 ];
 
 export function DashboardOverview({ accounts, transactions }) {
-  const [selectedAccountId, setSelectedAccountId] = useState(
-    accounts.find((a) => a.isDefault)?.id || accounts[0]?.id
+  const [selectedAccountId, setSelectedAccountId] = useState( // State to hold the selected account ID, initially set to the default account or first account
+    accounts.find((a) => a.isDefault)?.id || accounts[0]?.id // find the default account or use the first account if no default is set
   );
 
   // Filter transactions for selected account
-  const accountTransactions = transactions.filter(
-    (t) => t.accountId === selectedAccountId
+  const accountTransactions = transactions.filter( // Filter transactions based on the selected account ID
+    (t) => t.accountId === selectedAccountId // Get transactions for the selected account
   );
 
   // Get recent transactions (last 5)
   const recentTransactions = accountTransactions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort transactions by date in descending order
     .slice(0, 5);
 
   // Calculate expense breakdown for current month
-  const currentDate = new Date();
-  const currentMonthExpenses = accountTransactions.filter((t) => {
-    const transactionDate = new Date(t.date);
-    return (
-      t.type === "EXPENSE" &&
-      transactionDate.getMonth() === currentDate.getMonth() &&
-      transactionDate.getFullYear() === currentDate.getFullYear()
+  const currentDate = new Date(); // Get current date to filter transactions for the current month
+  const currentMonthExpenses = accountTransactions.filter((t) => { // Filter transactions to get only expenses for the current month for pie chart
+    const transactionDate = new Date(t.date); // Convert transaction date string to Date object
+    return ( // return true if the transaction is an expense and falls within the current month
+      t.type === "EXPENSE" && // Only consider expenses
+      transactionDate.getMonth() === currentDate.getMonth() && // Check if the month of the transaction matches the current month
+      transactionDate.getFullYear() === currentDate.getFullYear() // Check if the year of the transaction matches the current year
     );
   });
 
-  // Group expenses by category
-  const expensesByCategory = currentMonthExpenses.reduce((acc, transaction) => {
-    const category = transaction.category;
-    if (!acc[category]) {
-      acc[category] = 0;
+  // Group expenses by category, we got all expenses for the current month in currentMonthExpenses now we need to group them by category
+  // from currentMonthExpenses object we will create an object where keys are categories and values are total amounts for that category
+  // this object is stored in expensesByCategory in accumulator pattern
+  // accumulator is an object that will hold the total amounts for each category
+  const expensesByCategory = currentMonthExpenses.reduce((acc, transaction) => { // Reduce the filtered expenses to group them by category
+    const category = transaction.category; // Get the category of the transaction
+    if (!acc[category]) { // If the category doesn't exist in the accumulator, initialize it
+      acc[category] = 0; 
     }
-    acc[category] += transaction.amount;
-    return acc;
+    acc[category] += transaction.amount; // Add the transaction amount to the corresponding category
+    return acc; // Return the accumulator for the next iteration, acc is an object where keys are categories and values are total amounts
   }, {});
 
-  // Format data for pie chart
-  const pieChartData = Object.entries(expensesByCategory).map(
-    ([category, amount]) => ({
-      name: category,
-      value: amount,
+  // Format data for pie chart, upper expensesByCategory is an object where keys are categories and values are total amounts
+  // we need to convert this object into an array of objects where each object has a name and value property
+  // this is done to match the data structure expected by the recharts Pie
+  const pieChartData = Object.entries(expensesByCategory).map( // Convert the expensesByCategory object into an array of objects for the pie chart
+    // redefine the structure of each object in the array
+    ([category, amount]) => ({ // Each object will have a name and value property corresponding to the category and total amount
+      name: category, // Category name
+      value: amount, // Total amount for that category
     })
   );
 
@@ -108,10 +114,10 @@ export function DashboardOverview({ accounts, transactions }) {
         <CardContent className="px-4 py-5">
           <div className="space-y-4">
             {recentTransactions.length === 0 ? (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-6">
+              <p className="text-center text-cyan-500 py-4">
                 No recent transactions
               </p>
-            ) : (
+            ) : ( // If there are recent transactions, map through them to display
               recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
@@ -138,7 +144,7 @@ export function DashboardOverview({ accounts, transactions }) {
                     ) : (
                       <ArrowUpRight className="mr-1 h-4 w-4" />
                     )}
-                    ${transaction.amount.toFixed(2)}
+                    ₹{transaction.amount.toFixed(2)}
                   </div>
                 </div>
               ))
@@ -154,26 +160,27 @@ export function DashboardOverview({ accounts, transactions }) {
             Monthly Expense Breakdown
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0 pb-5">
+        <CardContent className="px-4 py-5">
           {pieChartData.length === 0 ? ( // If no expenses, show message
-            <p className="text-center text-muted-foreground py-4">
+            <p className="text-center text-cyan-500 py-8">
               No expenses this month
             </p>
-          ) : (
+          ) : ( // If there are expenses, render the pie chart
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
+                  <Pie // pie is a component from recharts that renders a pie chart
                     data={pieChartData}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
+                    label={({ name, value }) => `${name}: ₹${value.toFixed(2)}`}
                   >
-                    {pieChartData.map((entry, index) => ( // Map through pie chart data to create cells, each cell represents a category
-                    // index is used to assign a color from the COLORS array to each category
+                    {pieChartData.map((entry, index) => ( // Map through pie chart data array which is array of obj to create cells, each cell represents a 
+                    // category index is used to assign a color from the COLORS array to each category, entry is the data for that category 
+                    // index is used to cycle through the COLORS array
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -181,7 +188,7 @@ export function DashboardOverview({ accounts, transactions }) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `$${value.toFixed(2)}`}
+                    formatter={(value) => `₹${value.toFixed(2)}`}
                     contentStyle={{
                       backgroundColor: "#23D5D5", // Teal-600 from Tailwind
                       border: "none",

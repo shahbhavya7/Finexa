@@ -146,7 +146,7 @@ export function AccountChart({ transactions }) { // AccountChart component to di
                 tickFormatter={(value) => `₹${value}`} // Format Y-axis labels as currency
               />
               <Tooltip // Custom tooltip to format values on hover
-                formatter={(value) => [`$${value}`, undefined]} // Format tooltip values as value from the data
+                formatter={(value) => [`₹${value}`, undefined]} // Format tooltip values as value from the data
                 contentStyle={{
                   backgroundColor: "hsl(var(--popover))",
                   border: "1px solid hsl(var(--border))",
