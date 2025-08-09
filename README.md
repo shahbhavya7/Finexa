@@ -38,6 +38,8 @@
 - **📊 Interactive Financial Dashboard** - Beautiful charts and real-time insights into your spending patterns
 - **🔄 Automated Transaction Management** - Smart recurring transaction handling with cron job automation
 - **📧 Intelligent Email Notifications** - Monthly budget reports and spending alerts delivered to your inbox
+- **💳 Receipt Scanning** - OCR-powered receipt capture and automatic expense categorization
+
 - **💼 Multi-Account Support** - Manage all your financial accounts in one unified platform
 - **📈 Comprehensive Analytics** - Year-round transaction history with detailed spending breakdowns
 - **🛡️ Enterprise Security** - Protected by Clerk authentication and Arcjet bot prevention
@@ -372,7 +374,6 @@ We welcome contributions to make Finexa even better!
 - 🌍 **Multi-Currency** - Support for international currencies with real-time exchange rates
 - 📈 **Advanced Analytics** - Machine learning-powered spending predictions and trend analysis
 - 🔔 **Smart Notifications** - AI-powered contextual alerts and financial reminders
-- 💳 **Receipt Scanning** - OCR-powered receipt capture and automatic expense categorization
 - 🏷️ **Custom Categories** - User-defined spending categories with smart auto-assignment
 
 
