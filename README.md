@@ -155,7 +155,6 @@ graph TD
     style C fill:#45B7D1,stroke:#333,stroke-width:2px,color:#fff
     style D fill:#96CEB4,stroke:#333,stroke-width:2px,color:#fff
     style E fill:#FFEAA7,stroke:#333,stroke-width:2px,color:#333
-    style F fill:#DDA0DD,stroke:#333,stroke-width:2px,color:#333
 ```
 
 ### User Journey
