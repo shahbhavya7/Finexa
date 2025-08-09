@@ -32,7 +32,7 @@
   
 </div>
 
-### ✨ What makes Finexa special?
+## ✨ What makes Finexa special?
 
 - **🤖 AI-Powered Financial Intelligence** - Smart spending analysis and personalized advice powered by Google Gemini
 - **📊 Interactive Financial Dashboard** - Beautiful charts and real-time insights into your spending patterns
@@ -147,13 +147,9 @@ graph TD
     G --> H[⏰ Inngest Cron Jobs]
     H --> I[📧 Email Notifications]
     
-    D --> J[📊 Interactive Charts]
-    E --> K[🧠 Gemini AI Analysis]
-    K --> L[💡 Personalized Advice]
-    
-    F --> M[💳 Multi-Account View]
-    M --> N[🎯 Budget Tracking]
-    N --> O[⚠️ Spending Alerts]
+    D --> J[💳 Multi-Account View]
+    E --> K[🎯 Budget Tracking]
+    K --> L[⚠️ Spending Alerts]
     
     style A fill:#6C47FF,stroke:#333,stroke-width:2px,color:#fff
     style B fill:#4ECDC4,stroke:#333,stroke-width:2px,color:#fff
@@ -357,7 +353,7 @@ We welcome contributions to make Finexa even better!
   
 </div>
 
----
+
 
 <div align="center">
   
