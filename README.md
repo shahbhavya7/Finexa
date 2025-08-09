@@ -1,4 +1,4 @@
-# 💵 Finexa -  Your Complete Finance Management Platform
+# 💵 Finexa -  Smart Finance Tracker
 
 <div align="center">
   
@@ -140,8 +140,7 @@ graph TD
     A[🔐 Clerk Authentication] --> B[📊 Financial Dashboard]
     B --> C[💰 Transaction Manager]
     B --> D[📈 Spending Analytics]
-    B --> E[🤖 AI Financial Advisor]
-    B --> F[💼 Account Manager]
+    B --> E[💼 Account Manager]
     
     C --> G[🔄 Recurring Payments]
     G --> H[⏰ Inngest Cron Jobs]
